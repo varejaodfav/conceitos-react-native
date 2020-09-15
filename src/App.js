@@ -15,9 +15,13 @@ export default function App() {
   const [repositories, setRepository] = useState([]);
 
   async function handleLikeRepository(id) {
-    const response = await api.post(`repositories/${id}/like`);
+    await api.post(`repositories/${id}/like`).then((response) => {
+      const updateIndex = repositories.findIndex((index) => index.id === id);
 
-    setRepository(...repositories, response);
+      repositories[updateIndex] = response.data;
+
+      setRepository([...repositories]);
+    });
   }
 
   useEffect(() => {
@@ -39,10 +43,10 @@ export default function App() {
 
               <FlatList
                 style={styles.techsContainer}
-                data={repositories}
-                keyExtractor={(repository) => repository.id}
-                renderItem={({ item: repository }) => (
-                  <Text style={styles.tech}>{repository.techs}</Text>
+                data={repository.techs}
+                keyExtractor={(tech) => tech}
+                renderItem={({ item: tech }) => (
+                  <Text style={styles.tech}>{tech}</Text>
                 )}
               />
 
@@ -52,7 +56,8 @@ export default function App() {
                   // Remember to replace "1" below with repository ID: {`repository-likes-${repository.id}`}
                   testID={`repository-likes-${repository.id}`}
                 >
-                  {repository.likes}
+                  {repository.likes}{" "}
+                  {repository.likes === 1 ? "curtida" : "curtidas"}
                 </Text>
               </View>
 
@@ -104,7 +109,6 @@ const styles = StyleSheet.create({
   likesContainer: {
     marginTop: 15,
     flexDirection: "row",
-    justifyContent: "space-between",
   },
   likeText: {
     fontSize: 14,
@@ -113,6 +117,8 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 10,
+    alignItems: "flex-start",
+    justifyContent: "center",
   },
   buttonText: {
     fontSize: 14,
